@@ -101487,8 +101487,7 @@ var theme_1 = __importDefault(require("~/styles/theme"));
 
 var appwrite_1 = require("appwrite");
 
-var components_1 = require("~/components"); //http://localhost:1234/613a328de7e58/613a33abd298b
-
+var components_1 = require("~/components");
 
 var App = /*#__PURE__*/function (_react_1$default$Comp) {
   _inherits(App, _react_1$default$Comp);
@@ -101503,9 +101502,10 @@ var App = /*#__PURE__*/function (_react_1$default$Comp) {
     _this = _super.apply(this, arguments);
     _this.project = '613a23243739a';
     _this.endpoint = 'https://api.devpipe.com/v1';
-    _this.collection = '613a285362dfb';
+    _this.collection = '613b631dbced4';
     _this.state = {
-      url: null
+      url: null,
+      notfound: false
     };
     return _this;
   }
@@ -101527,16 +101527,74 @@ var App = /*#__PURE__*/function (_react_1$default$Comp) {
       var _document$location$pa = document.location.pathname.split('/'),
           _document$location$pa2 = _slicedToArray(_document$location$pa, 3),
           _ = _document$location$pa2[0],
-          _accountId = _document$location$pa2[1],
-          linkId = _document$location$pa2[2];
+          tag = _document$location$pa2[1],
+          code = _document$location$pa2[2];
 
-      this.sdk.database.getDocument(this.collection, linkId).then(function (res) {
-        if (res['url']) {
+      this.sdk.database.listDocuments(this.collection, ["code=".concat(code), "tag=".concat(tag)]).then(function (res) {
+        var docs = res['documents'] || [];
+        console.log("docs: ", docs);
+
+        if (docs.length == 0) {
           _this2.setState({
-            url: res['url']
+            url: null,
+            notfound: true
           });
+
+          return;
         }
+
+        var doc = docs[0];
+
+        _this2.setState({
+          notfound: false,
+          url: doc['url']
+        });
       }, console.error);
+    }
+  }, {
+    key: "renderImageView",
+    value: function renderImageView() {
+      return react_1.default.createElement(react_2.Box, {
+        flex: "1",
+        w: "100%",
+        h: "100%",
+        style: {
+          backgroundImage: "url(\"".concat(this.state.url, "\")"),
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat'
+        }
+      });
+    }
+  }, {
+    key: "renderInitial",
+    value: function renderInitial() {
+      return react_1.default.createElement(react_2.Box, null, react_1.default.createElement(react_2.Heading, {
+        as: "h1",
+        textAlign: "center",
+        p: 10
+      }, "Loading..."));
+    }
+  }, {
+    key: "renderNotFound",
+    value: function renderNotFound() {
+      return react_1.default.createElement(react_2.Box, null, react_1.default.createElement(react_2.Heading, {
+        as: "h1"
+      }, "404 : Not found."));
+    }
+  }, {
+    key: "renderContent",
+    value: function renderContent() {
+      if (this.state.notfound == false && this.state.url == null) {
+        return this.renderInitial();
+      }
+
+      if (this.state.notfound == true) {
+        return this.renderNotFound();
+      }
+
+      if (this.state.url != null) {
+        return this.renderImageView();
+      }
     }
   }, {
     key: "render",
@@ -101558,16 +101616,7 @@ var App = /*#__PURE__*/function (_react_1$default$Comp) {
         align: "stretch",
         w: "100%",
         h: "100%"
-      }, react_1.default.createElement(react_2.Box, {
-        flex: "1",
-        w: "100%",
-        h: "100%",
-        style: {
-          backgroundImage: "url(\"".concat(this.state.url, "\")"),
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat'
-        }
-      })))))));
+      }, this.renderContent()))))));
     }
   }]);
 
@@ -101768,7 +101817,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53181" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62287" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
