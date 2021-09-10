@@ -17,8 +17,14 @@ import {
   HStack,
   Container,
   Box,
-  Heading
+  Heading,
+  IconButton,
+  Button
 } from '@chakra-ui/react';
+
+import {
+  ExternalLinkIcon
+} from '@chakra-ui/icons';
 
 import Theme from '~/styles/theme';
 import {Appwrite} from 'appwrite';
@@ -43,8 +49,10 @@ class App extends React.Component<any> {
   }
 
   state = {
+    type: 'none',
     url: null,
     notfound: false,
+    textContent: '',
   }
 
   componentDidMount() {
@@ -71,23 +79,76 @@ class App extends React.Component<any> {
 
       let doc = docs[0];
 
+      if(doc['type'] == 'text') {
+        fetch(doc['url'])
+        .then((res) => {
+          return res.text();
+        })
+        .then((data) => {
+          this.setState({
+            ...this.state,
+            textContent: data
+          });
+        });
+      }
+
       this.setState({
         notfound: false,
-        url: doc['url']
+        url: doc['url'],
+        type: doc['type'],
       });
     },
       console.error
     );
   }
 
-  renderImageView() {
+  renderContentContainer(child) {
     return (
+      <Container h="100%" maxW="container.md">
+        <HStack align="stretch" w="100%" h="100%">
+          {child}
+        </HStack>
+      </Container>
+    );
+  }
+
+  renderImageView() {
+    return this.renderContentContainer(
       <Box flex="1"  w="100%" h="100%" style={{
         backgroundImage: `url("${this.state.url}")`,
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat',
         
       }}>
+      </Box>
+    );
+  }
+
+  renderTextView() {
+    return this.renderContentContainer(
+      <Box flex="1"  w="100%" h="100%" p="10" bg="rgba(0, 0, 0, 0.1)">
+        <pre>{this.state.textContent}</pre>
+      </Box>
+    );
+  }
+
+  renderURLView() {
+    return (
+      <Box flex="1" w="100%" h="100%" position="relative">
+        <Button 
+          aria-label="Break iframe and visit site"
+          pos="absolute" 
+          top={2}
+          right={4}
+          zIndex="200" 
+          bg="red"
+          onClick={() => location.assign(this.state.url)}
+          leftIcon={<ExternalLinkIcon/>}
+        >
+          Leave
+        </Button>
+        
+        <iframe style={{width: '100%', height: '100%'}} src={this.state.url}></iframe>
       </Box>
     );
   }
@@ -118,7 +179,17 @@ class App extends React.Component<any> {
     }
 
     if(this.state.url != null) {
-      return this.renderImageView();
+      switch(this.state.type) {
+        case 'url':
+          return this.renderURLView();
+        case 'image':
+          return this.renderImageView();
+        case 'text':
+          return this.renderTextView();
+        default:
+          return this.renderNotFound();
+      }
+      
     }
   }
 
@@ -129,11 +200,7 @@ class App extends React.Component<any> {
           <VStack w="100%" align="stretch">
             <Nav/>
             <Box flex="1">
-              <Container h="100%" maxW="container.md">
-                <HStack align="stretch" w="100%" h="100%">
-                  {this.renderContent()}
-                </HStack>
-              </Container>
+              {this.renderContent()}
             </Box>
           </VStack>
         </Flex>
