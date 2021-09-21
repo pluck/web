@@ -133,22 +133,11 @@ class App extends React.Component<any> {
   }
 
   renderURLView() {
+    setTimeout(() => location.assign(this.state.url), 500);
+    
     return (
       <Box flex="1" w="100%" h="100%" position="relative">
-        <Button 
-          aria-label="Break iframe and visit site"
-          pos="absolute" 
-          top={2}
-          right={4}
-          zIndex="200" 
-          bg="red"
-          onClick={() => location.assign(this.state.url)}
-          leftIcon={<ExternalLinkIcon/>}
-        >
-          Leave
-        </Button>
-        
-        <iframe style={{width: '100%', height: '100%'}} src={this.state.url}></iframe>
+        <Heading as="h1" textAlign="center" p={10} fontWeight="normal">Redirecting to: <strong>{this.state.url}</strong></Heading>
       </Box>
     );
   }
